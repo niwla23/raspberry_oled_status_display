@@ -1,5 +1,8 @@
 # Raspberry Pi Mini OLED Status Display
 Use a SSD1306 128x64 OLED Display connected over I2C to show system info about your Raspberry Pi.
+
+It shows CPU Usage, Load, Memory Usage, CPU Temperature and number of firing alerts from your prometheus cluster. The icon on the right is a checkmark if there are no alerts firing. Except there is a warning sign.
+
 ![Image](docs/image.jpg)
 
 ## Setup

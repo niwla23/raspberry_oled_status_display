@@ -9,7 +9,7 @@ import socket
 
 WIDTH = 128 # Width of display
 HEIGHT = 64  # Heigth of display
-UPDATE_INTERVAL = 0.5 # data refresh interval in seconds
+UPDATE_INTERVAL = 5 # data refresh interval in seconds
 BURN_IN_PREVENTION_INTERVAL = 600 # shows a white screen every x seconds
 PROMETHEUS_BASE_URL = "http://127.0.0.1:9090" # base url for your prometheus server providing alert count
 

@@ -5,12 +5,13 @@ import adafruit_ssd1306
 import psutil
 import time
 import requests
+import socket
 
-WIDTH = 128
-HEIGHT = 64  # Change to 64 if needed
-BORDER = 5
-UPDATE_INTERVAL = 0.5
-BURN_IN_PREVENTION_INTERVAL = 600
+WIDTH = 128 # Width of display
+HEIGHT = 64  # Heigth of display
+UPDATE_INTERVAL = 0.5 # data refresh interval in seconds
+BURN_IN_PREVENTION_INTERVAL = 600 # shows a white screen every x seconds
+PROMETHEUS_BASE_URL = "http://127.0.0.1:9090" # base url for your prometheus server providing alert count
 
 i2c = board.I2C()
 oled = adafruit_ssd1306.SSD1306_I2C(WIDTH, HEIGHT, i2c, addr=0x3C)
@@ -85,6 +86,20 @@ def draw_data(hostname: str, ip: str, load1: float, cpu_usage: float, mem_usage:
     # Display image
     oled.image(canvas)
 
+import socket
+def get_ip():
+    """https://stackoverflow.com/a/28950776"""
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.settimeout(0)
+    try:
+        # doesn't even have to be reachable
+        s.connect(('192.255.255.255', 1))
+        IP = s.getsockname()[0]
+    except Exception:
+        IP = '127.0.0.1'
+    finally:
+        s.close()
+    return IP
 
 counter = 0
 while True:
@@ -101,16 +116,17 @@ while True:
 
     is_ok = True
 
-    alerts = requests.get('http://127.0.0.1:9090/api/v1/query?query=ALERTS{alertstate="firing"}')
+    alerts = requests.get(f'{PROMETHEUS_BASE_URL}/api/v1/query?query=ALERTS{{alertstate="firing"}}')
     alert_count = len(alerts.json()["data"]["result"])
     if alert_count > 0:
         is_ok = False
 
     load1, _load5, _load15 = psutil.getloadavg()
+    hostname=socket.gethostname()
 
     draw_data(
-        hostname="bigmac",
-        ip="192.168.178.33",
+        hostname=hostname,
+        ip=get_ip(),
         cpu_usage=psutil.cpu_percent(0),
         mem_usage=psutil.virtual_memory()[2],
         temperature=psutil.sensors_temperatures()["cpu_thermal"][0].current,
@@ -118,6 +134,7 @@ while True:
         alert_count=alert_count,
         is_ok=is_ok
     )
+
     oled.show()
     time.sleep(UPDATE_INTERVAL - (time.time() - time_start))
     counter+=1

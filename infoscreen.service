@@ -1,0 +1,14 @@
+[Unit]
+Description=Mini OLED Status Display
+After=multi-user.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/pi/apps/statusdisplay
+User=pi
+ExecStart=/usr/bin/python3 /home/pi/apps/statusdisplay/main.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
